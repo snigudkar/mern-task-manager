@@ -2,131 +2,116 @@ import React, { useState, useEffect } from 'react';
 import API from './api';
 
 export default function App() {
-  // 1. Check if user data exists in browser memory on load
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('teamUser');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-
-  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('teamUser')));
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [tasks, setTasks] = useState([]);
   const [taskText, setTaskText] = useState('');
 
-  // 2. Login/Signup Function
   const handleAuth = async () => {
-    if (!formData.name || !formData.email) return alert("Please fill in both fields");
     try {
-      const { data } = await API.post('/auth', formData);
+      const endpoint = isLogin ? '/login' : '/signup';
+      const { data } = await API.post(endpoint, formData);
       setUser(data);
-      localStorage.setItem('teamUser', JSON.stringify(data)); // Stay logged in
+      localStorage.setItem('teamUser', JSON.stringify(data));
     } catch (err) {
-      alert("Auth failed. Check if Backend is running!");
+      alert(err.response?.data?.message || "Auth Error");
     }
   };
 
-  // 3. Logout Function
   const handleLogout = () => {
     localStorage.removeItem('teamUser');
     setUser(null);
-    setTasks([]);
   };
 
-  const fetchAllTasks = async () => {
-    try {
-      const { data } = await API.get('/tasks');
-      setTasks(data);
-    } catch (err) { console.error("Fetch failed", err); }
+  const fetchTasks = async () => {
+    const { data } = await API.get('/tasks');
+    setTasks(data);
   };
 
-  useEffect(() => { if (user) fetchAllTasks(); }, [user]);
+  useEffect(() => { if (user) fetchTasks(); }, [user]);
 
   const addTask = async () => {
     if (!taskText) return;
     await API.post('/tasks', { text: taskText, createdBy: user.name });
     setTaskText('');
-    fetchAllTasks();
+    fetchTasks();
   };
 
-  const toggleTask = async (id, currentStatus) => {
-    await API.put(`/tasks/${id}`, { completed: !currentStatus });
-    fetchAllTasks();
+  const toggleTask = async (id, status) => {
+    await API.put(`/tasks/${id}`, { completed: !status });
+    fetchTasks();
   };
 
-  // --- VIEW: LOGIN / SIGNUP SCREEN ---
   if (!user) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
-        <h1 className="text-3xl font-extrabold text-slate-800 mb-2 text-center">Team Login</h1>
-        <p className="text-slate-500 mb-6 text-center">Enter your name and email to start</p>
-        <input 
-          className="w-full p-3 border rounded-lg mb-3 outline-blue-500" 
-          placeholder="Full Name" 
-          onChange={e => setFormData({...formData, name: e.target.value})} 
-        />
-        <input 
-          className="w-full p-3 border rounded-lg mb-6 outline-blue-500" 
-          placeholder="Email Address" 
-          onChange={e => setFormData({...formData, email: e.target.value})} 
-        />
-        <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition" onClick={handleAuth}>
-          Enter Dashboard
-        </button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6">
+      <div className="bg-white/90 backdrop-blur-md p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/20">
+        <h1 className="text-4xl font-black text-gray-800 mb-2 text-center">TeamFlow</h1>
+        <p className="text-gray-500 text-center mb-8">{isLogin ? 'Welcome back!' : 'Create your account'}</p>
+        
+        <div className="space-y-4">
+          {!isLogin && (
+            <input className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-purple-400 outline-none transition" 
+                   placeholder="Full Name" onChange={e => setFormData({...formData, name: e.target.value})} />
+          )}
+          <input className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-purple-400 outline-none transition" 
+                 placeholder="Email" onChange={e => setFormData({...formData, email: e.target.value})} />
+          <input type="password" className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-purple-400 outline-none transition" 
+                 placeholder="Password" onChange={e => setFormData({...formData, password: e.target.value})} />
+          
+          <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition" onClick={handleAuth}>
+            {isLogin ? 'Sign In' : 'Create Account'}
+          </button>
+        </div>
+
+        <p className="mt-6 text-center text-sm text-gray-600">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
+          <button className="ml-2 text-indigo-600 font-bold hover:underline" onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? 'Sign Up' : 'Login'}
+          </button>
+        </p>
       </div>
     </div>
   );
 
-  // --- VIEW: TASK DASHBOARD ---
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-4xl font-black text-slate-900">Group Tasks</h1>
-            <p className="text-slate-500">Shared with the team</p>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
+          <h2 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">TeamFlow</h2>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:block text-sm font-medium text-slate-500">Logged in as <b className="text-slate-900">{user.name}</b></span>
+            <button onClick={handleLogout} className="text-sm font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full hover:bg-red-100 transition">Logout</button>
           </div>
-          <div className="text-right">
-            <p className="font-bold text-slate-800">{user.name}</p>
-            <button onClick={handleLogout} className="text-xs text-red-500 hover:underline font-bold uppercase tracking-widest">
-              Logout
-            </button>
-          </div>
-        </header>
+        </div>
+      </nav>
 
-        {/* Add Task Input */}
-        <div className="flex gap-3 mb-10 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-          <input 
-            className="flex-grow p-3 bg-slate-50 rounded-xl outline-none" 
-            value={taskText} 
-            onChange={e => setTaskText(e.target.value)} 
-            placeholder="Assign a task..." 
-          />
-          <button className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition" onClick={addTask}>
-            Add
-          </button>
+      <main className="max-w-4xl mx-auto p-6 mt-8">
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 mb-10">
+          <h3 className="text-lg font-bold mb-4">Assign New Task</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input className="flex-grow p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400 transition" 
+                   value={taskText} onChange={e => setTaskText(e.target.value)} placeholder="What needs to be done?" />
+            <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:shadow-xl hover:-translate-y-1 transition active:translate-y-0" onClick={addTask}>Add to Board</button>
+          </div>
         </div>
 
-        {/* Task List */}
         <div className="grid gap-4">
           {tasks.map(t => (
-            <div key={t._id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-              <div>
-                <p className={`text-lg font-medium ${t.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
-                  {t.text}
-                </p>
-                <p className="text-sm text-blue-500 font-bold">BY: {t.createdBy}</p>
+            <div key={t._id} className="group bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center justify-between hover:shadow-md transition">
+              <div className="flex flex-col">
+                <span className={`text-lg font-semibold ${t.completed ? 'line-through text-slate-300' : 'text-slate-800'}`}>{t.text}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-1">Creator: {t.createdBy}</span>
               </div>
-              <button 
-                onClick={() => toggleTask(t._id, t.completed)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition ${
-                  t.completed ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700 hover:bg-green-200'
-                }`}
-              >
-                {t.completed ? 'Undo' : 'Done'}
+              <button onClick={() => toggleTask(t._id, t.completed)} 
+                      className={`px-6 py-2 rounded-2xl text-sm font-black transition ${t.completed ? 'bg-slate-100 text-slate-400' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white'}`}>
+                {t.completed ? 'REOPEN' : 'DONE'}
               </button>
             </div>
           ))}
+          {tasks.length === 0 && <div className="text-center py-20 text-slate-400">The task board is empty. Start by adding a task!</div>}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

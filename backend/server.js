@@ -4,7 +4,18 @@ const cors = require('cors');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const app = express();
-app.use(cors()); 
+// Replace your existing CORS block with this:
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  
+  // Handle the "Preflight" request specifically
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 app.use(express.json());
 
 // 1. Database Connection
@@ -16,13 +27,12 @@ async function startDB() {
 startDB();
 
 // 2. Models
-// We store 'name' during registration
 const User = mongoose.model('User', { 
     name: String, 
-    email: { type: String, unique: true } 
+    email: { type: String, unique: true },
+    password: String 
 });
 
-// We store 'createdBy' (the name) so the team knows who added the task
 const Task = mongoose.model('Task', { 
     text: String, 
     createdBy: String, 
@@ -31,13 +41,34 @@ const Task = mongoose.model('Task', {
 
 // 3. APIs
 
-// Login/Signup: Creates user if they don't exist
-app.post('/api/auth', async (req, res) => {
-    let user = await User.findOne({ email: req.body.email });
-    if (!user) {
-        user = await User.create({ name: req.body.name, email: req.body.email });
+// SIGNUP: Handles new user registration
+app.post('/api/signup', async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const existing = await User.findOne({ email });
+        if (existing) return res.status(400).json({ message: "User already exists" });
+
+        const user = await User.create({ name, email, password });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Error creating user" });
     }
-    res.json(user);
+});
+
+// LOGIN: Handles existing user authentication
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email, password });
+        
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(401).json({ message: "Invalid email or password" });
+        }
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
 });
 
 // GET: All tasks for the group dashboard
@@ -46,9 +77,9 @@ app.get('/api/tasks', async (req, res) => {
     res.json(tasks);
 });
 
-// POST: Add a task with the creator's name
+// POST: Add a task
 app.post('/api/tasks', async (req, res) => {
-    const task = await Task.create(req.body); // req.body will be { text, createdBy }
+    const task = await Task.create(req.body);
     res.json(task);
 });
 
@@ -58,4 +89,4 @@ app.put('/api/tasks/:id', async (req, res) => {
     res.json(task);
 });
 
-app.listen(5000, () => console.log("Backend running on 5000"));
+app.listen(5000, () => console.log("Backend running on port 5000"));
