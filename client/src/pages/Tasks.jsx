@@ -480,90 +480,352 @@
 
 
 //trial
-import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
+// import API from "../api";
+// import { useNavigate } from "react-router-dom";
+// import { FaPlus, FaUserCircle } from "react-icons/fa";
+
+// const Tasks = ({ user }) => {
+//   const [tasks, setTasks] = useState([]);
+//   const [filter, setFilter] = useState("all");
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     const fetchTasks = async () => {
+//       try {
+//         const { data } = await API.get("/api/tasks");
+//         setTasks(Array.isArray(data) ? data : []);
+//       } catch (error) {
+//         console.error("Error fetching tasks", error);
+//         setTasks([]); 
+//       }
+//     };
+//     fetchTasks();
+//   }, []);
+
+//   const filteredTasks = tasks.filter((task) => {
+//     const matchesUser = user?.role === "admin" || task.assignedTo?._id === user?._id;
+//     const matchesFilter = filter === "all" || task.status === filter;
+//     return matchesUser && matchesFilter;
+//   });
+
+//   const getPriorityColor = (p) => {
+//     const colors = { high: "bg-red-100 text-red-600", medium: "bg-yellow-100 text-yellow-600", normal: "bg-blue-100 text-blue-600" };
+//     return colors[p] || colors.normal;
+//   };
+
+//   return (
+//     <div className="p-6 bg-gray-50 min-h-screen">
+//       <div className="flex justify-between items-center mb-8">
+//         <div>
+//           <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
+//           <p className="text-gray-500 text-sm">Current Team Progress</p>
+//         </div>
+//         {user?.role === "admin" && (
+//           <button onClick={() => navigate("/create-task")} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition">
+//             <FaPlus size={14} /> Create Task
+//           </button>
+//         )}
+//       </div>
+
+//       <div className="flex gap-6 border-b mb-6">
+//         {["all", "todo", "inprogress", "completed"].map((tab) => (
+//           <button key={tab} onClick={() => setFilter(tab)} className={`capitalize pb-3 text-sm font-semibold transition-all relative ${filter === tab ? "text-blue-600" : "text-gray-500"}`}>
+//             {tab === "inprogress" ? "In Progress" : tab}
+//             {filter === tab && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>}
+//           </button>
+//         ))}
+//       </div>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//         {filteredTasks.length > 0 ? (
+//           filteredTasks.map((task) => (
+//             <div key={task._id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+//               <div className="flex justify-between items-start mb-3">
+//                 <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${getPriorityColor(task.priority)}`}>
+//                   {task.priority || "normal"}
+//                 </span>
+//               </div>
+//               <h3 className="font-bold text-gray-800 mb-1">{task.title}</h3>
+//               <p className="text-gray-500 text-xs mb-4 line-clamp-2">{task.description}</p>
+              
+//               <div className="flex items-center justify-between border-t pt-4">
+//                 <span className="text-[11px] font-bold text-gray-400 uppercase">● {task.status}</span>
+//                 <div className="flex items-center gap-2">
+//                   <span className="text-xs font-medium text-gray-600">
+//                     {task.assignedTo?.name || "Unassigned"}
+//                   </span>
+//                   <div className="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold">
+//                     {task.assignedTo?.name ? task.assignedTo.name.charAt(0) : <FaUserCircle />}
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           ))
+//         ) : (
+//           <div className="col-span-full text-center py-20 text-gray-400">No tasks found.</div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Tasks;
+// import React, { useEffect, useState } from "react";
+// import API from "../api";
+// import { useNavigate } from "react-router-dom";
+// import { FaPlus, FaUserCircle, FaTrash, FaCheckCircle } from "react-icons/fa";
+
+// const Tasks = ({ user }) => {
+//   const [tasks, setTasks] = useState([]);
+//   const [filter, setFilter] = useState("all");
+//   const navigate = useNavigate();
+
+//   const fetchTasks = async () => {
+//     try {
+//       const { data } = await API.get("/api/tasks");
+//       setTasks(Array.isArray(data) ? data : []);
+//     } catch (error) {
+//       setTasks([]);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchTasks();
+//   }, []);
+
+//   const handleDelete = async (taskId) => {
+//     if (!window.confirm("Delete this task?")) return;
+//     await API.delete(`/api/tasks/${taskId}`);
+//     fetchTasks();
+//   };
+
+//   const handleStatusChange = async (taskId, newStatus) => {
+//     await API.put(`/api/tasks/${taskId}`, { status: newStatus });
+//     fetchTasks();
+//   };
+
+//   // --- STRICT FILTERING LOGIC ---
+//   const filteredTasks = tasks.filter((task) => {
+//     if (!user) return false;
+
+//     // 1. Admin sees everything
+//     if (user.role === "admin") {
+//       return filter === "all" || task.status === filter;
+//     }
+
+//     // 2. Members see ONLY what is assigned to their unique ID
+//     const isAssignedToMe = task.assignedTo?._id === user._id;
+//     const matchesTab = filter === "all" || task.status === filter;
+
+//     return isAssignedToMe && matchesTab;
+//   });
+
+//   return (
+//     <div className="p-6 bg-gray-50 min-h-screen">
+//       <div className="flex justify-between items-center mb-8">
+//         <div>
+//           <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
+//           <p className="text-gray-500 text-sm">
+//             Account: <span className="text-blue-600 font-bold">{user?.name}</span> ({user?.role})
+//           </p>
+//         </div>
+//         {user?.role === "admin" && (
+//           <button onClick={() => navigate("/create-task")} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition">
+//             + Create Task
+//           </button>
+//         )}
+//       </div>
+
+//       <div className="flex gap-6 border-b mb-6">
+//         {["all", "todo", "inprogress", "completed"].map((tab) => (
+//           <button key={tab} onClick={() => setFilter(tab)} className={`capitalize pb-3 text-sm font-semibold transition-all relative ${filter === tab ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"}`}>
+//             {tab}
+//           </button>
+//         ))}
+//       </div>
+
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+//         {filteredTasks.length > 0 ? (
+//           filteredTasks.map((task) => (
+//             <div key={task._id} className="bg-white p-5 rounded-xl shadow-sm border relative">
+//               {user?.role === "admin" && (
+//                 <button onClick={() => handleDelete(task._id)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500">
+//                   <FaTrash size={12} />
+//                 </button>
+//               )}
+
+//               <h3 className="font-bold text-gray-800">{task.title}</h3>
+//               <p className="text-gray-500 text-xs mb-4">{task.description}</p>
+              
+//               <div className="mb-4">
+//                 {user?.role === "admin" ? (
+//                   <select 
+//                     className="text-xs border rounded p-1"
+//                     value={task.status}
+//                     onChange={(e) => handleStatusChange(task._id, e.target.value)}
+//                   >
+//                     <option value="todo">TODO</option>
+//                     <option value="inprogress">IN PROGRESS</option>
+//                     <option value="completed">COMPLETED</option>
+//                   </select>
+//                 ) : (
+//                   <span className="text-xs font-bold text-blue-600 uppercase">● {task.status}</span>
+//                 )}
+//               </div>
+
+//               <div className="flex items-center justify-between border-t pt-4">
+//                 <div className="flex items-center gap-2">
+//                   <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-bold">
+//                     {task.assignedTo?.name ? task.assignedTo.name.charAt(0) : "?"}
+//                   </div>
+//                   <span className="text-xs text-gray-600">{task.assignedTo?.name || "Unassigned"}</span>
+//                 </div>
+//                 {task.status === "completed" && <FaCheckCircle className="text-green-500" />}
+//               </div>
+//             </div>
+//           ))
+//         ) : (
+//           <div className="col-span-full text-center py-20 text-gray-400 border-2 border-dashed rounded-xl">
+//             No tasks found for your account.
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Tasks;
+  import React, { useEffect, useState } from "react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
-import { FaPlus, FaUserCircle } from "react-icons/fa";
+import { FaPlus, FaUserCircle, FaTrash, FaCheckCircle } from "react-icons/fa";
 
 const Tasks = ({ user }) => {
   const [tasks, setTasks] = useState([]);
   const [filter, setFilter] = useState("all");
   const navigate = useNavigate();
 
+  const fetchTasks = async () => {
+    try {
+      const { data } = await API.get("/api/tasks");
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setTasks([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const { data } = await API.get("/api/tasks");
-        setTasks(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching tasks", error);
-        setTasks([]); 
-      }
-    };
     fetchTasks();
   }, []);
 
-  const filteredTasks = tasks.filter((task) => {
-    const matchesUser = user?.role === "admin" || task.assignedTo?._id === user?._id;
-    const matchesFilter = filter === "all" || task.status === filter;
-    return matchesUser && matchesFilter;
-  });
-
-  const getPriorityColor = (p) => {
-    const colors = { high: "bg-red-100 text-red-600", medium: "bg-yellow-100 text-yellow-600", normal: "bg-blue-100 text-blue-600" };
-    return colors[p] || colors.normal;
+  const handleDelete = async (taskId) => {
+    if (!window.confirm("Delete this task?")) return;
+    await API.delete(`/api/tasks/${taskId}`);
+    fetchTasks();
   };
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    await API.put(`/api/tasks/${taskId}`, { status: newStatus });
+    fetchTasks();
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    if (!user) return false;
+
+    if (user.role === "admin") {
+      return filter === "all" || task.status === filter;
+    }
+
+    // ✅ FIX: Check if user's ID exists anywhere in the assignedTo array
+    const isAssignedToMe = task.assignedTo?.some(member => 
+      (typeof member === 'string' ? member : member._id) === user._id
+    );
+    const matchesTab = filter === "all" || task.status === filter;
+
+    return isAssignedToMe && matchesTab;
+  });
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
-          <p className="text-gray-500 text-sm">Current Team Progress</p>
+          <p className="text-gray-500 text-sm">
+            Account: <span className="text-blue-600 font-bold">{user?.name}</span> ({user?.role})
+          </p>
         </div>
         {user?.role === "admin" && (
-          <button onClick={() => navigate("/create-task")} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition">
-            <FaPlus size={14} /> Create Task
+          <button onClick={() => navigate("/create-task")} className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition">
+            + Create Task
           </button>
         )}
       </div>
 
       <div className="flex gap-6 border-b mb-6">
         {["all", "todo", "inprogress", "completed"].map((tab) => (
-          <button key={tab} onClick={() => setFilter(tab)} className={`capitalize pb-3 text-sm font-semibold transition-all relative ${filter === tab ? "text-blue-600" : "text-gray-500"}`}>
-            {tab === "inprogress" ? "In Progress" : tab}
-            {filter === tab && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>}
+          <button key={tab} onClick={() => setFilter(tab)} className={`capitalize pb-3 text-sm font-semibold transition-all relative ${filter === tab ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"}`}>
+            {tab}
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
-            <div key={task._id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start mb-3">
-                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${getPriorityColor(task.priority)}`}>
-                  {task.priority || "normal"}
-                </span>
+            <div key={task._id} className="bg-white p-5 rounded-xl shadow-sm border relative flex flex-col justify-between">
+              <div>
+                {user?.role === "admin" && (
+                  <button onClick={() => handleDelete(task._id)} className="absolute top-4 right-4 text-gray-300 hover:text-red-500">
+                    <FaTrash size={12} />
+                  </button>
+                )}
+
+                <h3 className="font-bold text-gray-800 uppercase tracking-tight">{task.title}</h3>
+                <p className="text-gray-500 text-xs mb-4 line-clamp-2">{task.description}</p>
+                
+                <div className="mb-4">
+                  {user?.role === "admin" ? (
+                    <select 
+                      className="text-xs border rounded p-1 bg-gray-50 outline-none"
+                      value={task.status}
+                      onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                    >
+                      <option value="todo">TODO</option>
+                      <option value="inprogress">IN PROGRESS</option>
+                      <option value="completed">COMPLETED</option>
+                    </select>
+                  ) : (
+                    <span className="text-xs font-bold text-blue-600 uppercase">● {task.status}</span>
+                  )}
+                </div>
               </div>
-              <h3 className="font-bold text-gray-800 mb-1">{task.title}</h3>
-              <p className="text-gray-500 text-xs mb-4 line-clamp-2">{task.description}</p>
-              
-              <div className="flex items-center justify-between border-t pt-4">
-                <span className="text-[11px] font-bold text-gray-400 uppercase">● {task.status}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-gray-600">
-                    {task.assignedTo?.name || "Unassigned"}
-                  </span>
-                  <div className="w-7 h-7 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold">
-                    {task.assignedTo?.name ? task.assignedTo.name.charAt(0) : <FaUserCircle />}
-                  </div>
+
+              <div className="border-t pt-4 mt-2">
+                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Assigned To:</p>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {/* ✅ FIX: Map through the array of members instead of showing just one */}
+                  {task.assignedTo && task.assignedTo.length > 0 ? (
+                    task.assignedTo.map((member, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 bg-gray-100 px-2 py-1 rounded-md">
+                        <div className="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold">
+                          {member.name ? member.name.charAt(0) : "?"}
+                        </div>
+                        <span className="text-[11px] text-gray-700 font-medium">{member.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">Unassigned</span>
+                  )}
+                  {task.status === "completed" && <FaCheckCircle className="text-green-500 ml-auto" />}
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-20 text-gray-400">No tasks found.</div>
+          <div className="col-span-full text-center py-20 text-gray-400 border-2 border-dashed rounded-xl">
+            No tasks found.
+          </div>
         )}
       </div>
     </div>
