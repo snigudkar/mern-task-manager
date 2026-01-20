@@ -26,7 +26,7 @@ const Sidebar = ({ user }) => {
       <div className="h-16 flex items-center px-8 border-b border-gray-100">
         <div className="text-2xl font-black text-blue-600 flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-lg">T</div>
-          <span>TaskMe</span>
+          <span>TaskFlow</span>
         </div>
       </div>
 
@@ -47,18 +47,7 @@ const Sidebar = ({ user }) => {
           </Link>
         ))}
 
-        {/* Trash Link (Bottom) */}
-        <div className="mt-auto">
-             <Link
-            to="/trash"
-            className={`flex items-center gap-3 px-4 py-3 rounded-full text-base font-medium transition-all ${
-              isActive("/trash") ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-red-50 hover:text-red-600"
-            }`}
-          >
-            <FaTrash />
-            <span>Trash</span>
-          </Link>
-        </div>
+        
       </div>
     </div>
   );
