@@ -1070,7 +1070,11 @@ app.use(express.json());
 
 // --- DATABASE SETUP ---
 async function startDB() {
-  const mongo = await MongoMemoryServer.create();
+  const mongo = await MongoMemoryServer.create({
+  instance: {
+    launchTimeout: 60000, // 60 seconds
+  },
+});
   await mongoose.connect(mongo.getUri());
   console.log("✅ In-Memory MongoDB Connected");
   await seedAdmin();
