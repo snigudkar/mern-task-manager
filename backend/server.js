@@ -7,13 +7,14 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 const app = express();
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://curly-system-v6v4pp5j9gxw369xq-5173.app.github.dev"],
+  origin: ["http://localhost:5173", "https://curly-system-v6v4pp5j9gxw369xq-5173.app.github.dev/"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "userid"],
   credentials: true 
 };
 
 app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // --- DATABASE SETUP ---
@@ -145,9 +146,9 @@ app.put("/api/tasks/:id", async (req, res) => {
     res.status(500).json({ message: "Error updating task" });
   }
 });
-// DELETE Task (Keep this for the manual call if needed)
-app.delete("/api/tasks/:id", async (req, res) => {
-  await Task.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-app.listen(5000, () => console.log("🚀 Server running on 5000"));

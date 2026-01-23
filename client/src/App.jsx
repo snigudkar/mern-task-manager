@@ -18,7 +18,7 @@ function Layout({ children, user, logout }) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Topbar Navigation (Contains Dashboard, Tasks, Team) */}
+      
       {user && <Topbar user={user} onLogout={logout} />}
       
       <main className="flex-1 overflow-y-auto">

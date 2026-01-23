@@ -115,7 +115,7 @@ const Tasks = ({ user }) => {
                   >
                     <option value="todo">📋 TO DO</option>
                     <option value="inprogress">⏳ IN PROGRESS</option>
-                    <option value="completed">✅ MARK COMPLETED (DELETE)</option>
+                    <option value="completed">✅ MARK COMPLETED</option>
                   </select>
                 </div>
               </div>
